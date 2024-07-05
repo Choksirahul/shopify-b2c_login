@@ -197,7 +197,16 @@ app.post("/auth/callback/token", async (req, res) => {
 
         const shopifyUrl = `https://${process.env.SHOPIFY_STORE}/account/login/multipass/${multipassToken}`;
         console.log(shopifyUrl);
-        res.redirect(shopifyUrl);
+        // res.redirect(shopifyUrl);
+        res.send(`
+          <html>
+            <head></head>
+            <body>
+              Redirecting to Shopify...
+              <a href="${shopifyUrl}">Shopify</a>
+            </body>
+          </html>
+        `);
       }
     );
   } catch (error) {
