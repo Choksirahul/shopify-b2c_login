@@ -234,16 +234,11 @@ app.get("/auth/success", (req, res) => {
     <html>
       <head></head>
       <body>
-        <button onclick='redirectToShopify()'>
-          Click on this link to redirect to shopify
-        </button>
-
+    
         <script>
-          function redirectToShopify() {
-            window.location = ${shopifyUrl};
-          }
-          
-          redirectToShopify();
+          document.addEventListener("DOMContentLoaded", function(event){
+            window.location.href = ${shopifyUrl};
+          });
         </script>
       </body>
     </html>
