@@ -230,8 +230,15 @@ function createMultipassToken(customerData) {
 }
 
 app.get("/auth/success", (req, res) => {
-  res.send("Authentication successful! You will be redirected shortly.");
-  window.location.href = shopifyUrl;
+  res.send(`
+    <html>
+      <head></head>
+      <body>
+        Redirecting to Shopify...
+        <a href="${shopifyUrl}">Shopify</a>
+      </body>
+    </html>
+  `);
   // res.redirect(shopifyUrl);
 });
 
