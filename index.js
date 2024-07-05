@@ -104,6 +104,7 @@ app.use(cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+let shopifyUrl;
 
 const client = jwksClient({
   jwksUri: `https://keeprdev.b2clogin.com/${process.env.B2C_TENANT}/discovery/v2.0/keys?p=${process.env.B2C_POLICY}`,
@@ -195,18 +196,18 @@ app.post("/auth/callback/token", async (req, res) => {
 
         const multipassToken = createMultipassToken(customerData);
 
-        const shopifyUrl = `https://${process.env.SHOPIFY_STORE}/account/login/multipass/${multipassToken}`;
+        shopifyUrl = `https://${process.env.SHOPIFY_STORE}/account/login/multipass/${multipassToken}`;
         console.log(shopifyUrl);
         // res.redirect(shopifyUrl);
-        res.send(`
-          <html>
-            <head></head>
-            <body>
-              Redirecting to Shopify...
-              <a href="${shopifyUrl}">Shopify</a>
-            </body>
-          </html>
-        `);
+        // res.send(`
+        //   <html>
+        //     <head></head>
+        //     <body>
+        //       Redirecting to Shopify...
+        //       <a href="${shopifyUrl}">Shopify</a>
+        //     </body>
+        //   </html>
+        // `);
       }
     );
   } catch (error) {
@@ -230,6 +231,7 @@ function createMultipassToken(customerData) {
 
 app.get("/auth/success", (req, res) => {
   res.send("Authentication successful! You will be redirected shortly.");
+  res.redirect(shopifyUrl);
 });
 
 app.get("/auth/failure", (req, res) => {
