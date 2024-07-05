@@ -235,7 +235,10 @@ app.get("/auth/success", (req, res) => {
       <head></head>
       <body>
         Redirecting to Shopify...
-        <a href="${shopifyUrl}">Shopify</a>
+
+        <script>
+          window.location.href = ${shopifyUrl}
+        </script>
       </body>
     </html>
   `);
