@@ -196,6 +196,7 @@ app.post("/auth/callback/token", async (req, res) => {
         const multipassToken = createMultipassToken(customerData);
 
         const shopifyUrl = `https://${process.env.SHOPIFY_STORE}/account/login/multipass/${multipassToken}`;
+        console.log(shopifyUrl);
         res.redirect(shopifyUrl);
       }
     );
