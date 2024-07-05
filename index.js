@@ -240,7 +240,7 @@ app.get("/auth/success", (req, res) => {
 
         <script>
           function redirectToShopify() {
-            window.location.href = ${shopifyUrl};
+            window.location = ${shopifyUrl};
           }
           
           redirectToShopify();
