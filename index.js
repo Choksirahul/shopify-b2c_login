@@ -231,16 +231,14 @@ function createMultipassToken(customerData) {
 
 app.get("/auth/success", (req, res) => {
   res.send(`
+    <!DOCTYPE html>
     <html>
-      <head></head>
-      <body>
-    
-        <script>
-          document.addEventListener("DOMContentLoaded", function(event){
-            window.location.href = ${shopifyUrl};
-          });
-        </script>
-      </body>
+    <head>
+        <title>Redirecting...</title>
+    </head>
+    <body>
+      <a href=${shopifyUrl}>Redirect to Shopify store</a>
+    </body>
     </html>
   `);
   // res.redirect(shopifyUrl);
