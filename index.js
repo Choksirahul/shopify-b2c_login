@@ -199,15 +199,16 @@ app.post("/auth/callback/token", async (req, res) => {
         shopifyUrl = `https://${process.env.SHOPIFY_STORE}/account/login/multipass/${multipassToken}`;
         console.log(shopifyUrl);
         // res.redirect(shopifyUrl);
-        res.send(`
-          <html>
-            <head></head>
-            <body>
-              Redirecting to Shopify...
-              <a href="${shopifyUrl}">Shopify</a>
-            </body>
-          </html>
-        `);
+        // res.send(`
+        //   <html>
+        //     <head></head>
+        //     <body>
+        //       Redirecting to Shopify...
+        //       <a href="${shopifyUrl}">Shopify</a>
+        //     </body>
+        //   </html>
+        // `);
+        res.json({ shopifyUrl });
       }
     );
   } catch (error) {
@@ -234,18 +235,34 @@ app.get("/auth/success", (req, res) => {
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Redirecting...</title>
+      <title>Redirecting...</title>
     </head>
     <body>
-      <a href=${shopifyUrl}>Redirect to Shopify store</a>
+      <script>
+        (function() {
+          fetch('/get-shopify-url')
+            .then(response => response.json())
+            .then(data => {
+              if (data.shopifyUrl) {
+                window.location.href = data.shopifyUrl;
+              } else {
+                document.body.innerHTML = 'Error: No Shopify URL found';
+              }
+            });
+        })();
+      </script>
     </body>
     </html>
   `);
-  // res.redirect(shopifyUrl);
 });
 
 app.get("/auth/failure", (req, res) => {
   res.send("Authentication failed! Please try again.");
+});
+
+app.get("/get-shopify-url", (req, res) => {
+  // This endpoint should return the Shopify URL after the user is authenticated
+  res.json({ shopifyUrl });
 });
 
 app.listen(port, () => {
