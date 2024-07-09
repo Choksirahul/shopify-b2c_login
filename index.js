@@ -141,7 +141,6 @@ function createMultipassToken(customerData) {
 
 app.get("/auth/success", (req, res) => {
   res.send(`
-    <!DOCTYPE html>
     <html>
     <head>
       <title>Redirecting...</title>
