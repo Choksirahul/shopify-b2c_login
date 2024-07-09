@@ -153,18 +153,15 @@ app.get("/auth/success", (req, res) => {
                 // Redirect to Shopify URL
                 window.location.href = data.shopifyUrl;
                 // Call the check_login endpoint with the email
-                fetch('/shopify/check_login?email=' + encodeURIComponent(data.email))
-                  .then(response => response.json())
-                  .then(loginData => {
+                fetch('/shopify/check_login?email=' + encodeURIComponent(data.email)).then(response => response.json()).then(loginData => {
                     console.log('Customer Data:', loginData);
-                  })
-                  .catch(error => {
+                }).catch(error => {
                     console.error('Error checking login:', error);
-                  });
+                });
               } else {
                 document.body.innerHTML = 'Error: No Shopify URL found';
               }
-            });
+          });
         })();
       </script>
     </body>
