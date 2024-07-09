@@ -181,7 +181,7 @@ app.get("/auth/failure", (req, res) => {
 
 app.get("/get-shopify-url", (req, res) => {
   // This endpoint should return the Shopify URL after the user is authenticated
-  res.json({ shopifyUrl });
+  res.json({ shopifyUrl, email });
 });
 
 app.get("/shopify/check_login", async (req, res) => {
