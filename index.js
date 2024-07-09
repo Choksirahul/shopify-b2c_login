@@ -184,11 +184,13 @@ app.get("/shopify/check_login", async (req, res) => {
   try {
     const shopifyUrl = `https://${process.env.SHOPIFY_STORE}/admin/customers/search.json?query=email:${req.query.email}`;
     const auth = {
-      username: process.env.SHOPIFY_API_KEY,
-      password: process.env.SHOPIFY_API_PASSWORD,
+      auth: {
+        username: process.env.SHOPIFY_API_KEY,
+        password: process.env.SHOPIFY_API_PASSWORD,
+      },
     };
 
-    const response = await axios.get(shopifyUrl, { auth });
+    const response = await axios.get(shopifyUrl, auth);
 
     if (response.data.customers && response.data.customers.length > 0) {
       res.json({ customer: response.data.customers[0] });
