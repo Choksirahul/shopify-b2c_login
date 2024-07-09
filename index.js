@@ -207,6 +207,10 @@ app.get("/shopify/check_login", async (req, res) => {
     }
   } catch (error) {
     console.error("Error fetching customer data:", error);
+    if (error.response) {
+      console.error("Response data:", error.response.data);
+      console.error("Response status:", error.response.status);
+    }
     res.status(500).send("Error fetching customer data");
   }
 });
