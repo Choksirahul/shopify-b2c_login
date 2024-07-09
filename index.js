@@ -173,23 +173,19 @@ app.get("/get-shopify-url", (req, res) => {
 
 app.get("/shopify/check_login", async (req, res) => {
   try {
-    const shopifyUrl = `https://${process.env.SHOPIFY_STORE}/admin/customers/search.json?query=email:${req.query.email}`;
-    console.log(`Shopify URL: ${shopifyUrl}`);
+    const shopifyUrl = `https://${process.env.SHOPIFY_STORE}/admin/api/2024-04/customers/search.json?query=email:${req.query.email}`;
 
     const authHeader = `Basic ${Buffer.from(
       `${process.env.SHOPIFY_API_KEY}:${process.env.SHOPIFY_API_PASSWORD}`
     ).toString("base64")}`;
 
-    console.log(`Auth Header: ${authHeader}`);
-
     const response = await axios.get(shopifyUrl, {
       headers: {
         Authorization: authHeader,
+        "Content-Type": "application/json",
+        Accept: "application/json",
       },
     });
-
-    console.log(`Shopify response status: ${response.status}`);
-    console.log(`Shopify response data: ${JSON.stringify(response.data)}`);
 
     if (response.data.customers && response.data.customers.length > 0) {
       res.json({ customer: response.data.customers[0] });
