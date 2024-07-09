@@ -142,6 +142,7 @@ function createMultipassToken(customerData) {
 }
 
 app.get("/auth/success", (req, res) => {
+  console.log(req.body.id_token);
   res.send(`
     <html>
     <head>
