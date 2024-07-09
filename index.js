@@ -142,7 +142,6 @@ function createMultipassToken(customerData) {
 }
 
 app.get("/auth/success", (req, res) => {
-  console.log(req.body.id_token);
   res.send(`
     <html>
     <head>
@@ -186,10 +185,13 @@ app.get("/shopify/check_login", async (req, res) => {
     const shopifyUrl = `https://${process.env.SHOPIFY_STORE}/admin/customers/search.json?query=email:${req.query.email}`;
     console.log(`Shopify URL: ${shopifyUrl}`);
 
+    const authHeader = `Basic ${Buffer.from(
+      `${process.env.SHOPIFY_API_KEY}:${process.env.SHOPIFY_API_PASSWORD}`
+    ).toString("base64")}`;
+
     const response = await axios.get(shopifyUrl, {
-      auth: {
-        username: process.env.SHOPIFY_API_KEY,
-        password: process.env.SHOPIFY_API_PASSWORD,
+      headers: {
+        Authorization: authHeader,
       },
     });
 
