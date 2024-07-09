@@ -148,9 +148,7 @@ app.get("/auth/success", (req, res) => {
     <body>
       <script>
         (function() {
-          fetch('/get-shopify-url')
-            .then(response => response.json())
-            .then(data => {
+          fetch('/get-shopify-url').then(response => response.json()).then(data => {
               if (data.shopifyUrl && data.email) {
                 // Redirect to Shopify URL
                 window.location.href = data.shopifyUrl;
