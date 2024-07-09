@@ -189,6 +189,8 @@ app.get("/shopify/check_login", async (req, res) => {
       `${process.env.SHOPIFY_API_KEY}:${process.env.SHOPIFY_API_PASSWORD}`
     ).toString("base64")}`;
 
+    console.log(`Auth Header: ${authHeader}`);
+
     const response = await axios.get(shopifyUrl, {
       headers: {
         Authorization: authHeader,
