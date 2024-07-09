@@ -14,6 +14,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 let shopifyUrl;
+let email;
 
 const client = jwksClient({
   jwksUri: `https://keeprdev.b2clogin.com/${process.env.B2C_TENANT}/discovery/v2.0/keys?p=${process.env.B2C_POLICY}`,
@@ -106,6 +107,7 @@ app.post("/auth/callback/token", async (req, res) => {
         const multipassToken = createMultipassToken(customerData);
 
         shopifyUrl = `https://${process.env.SHOPIFY_STORE}/account/login/multipass/${multipassToken}`;
+        email = customerData.email;
         console.log(shopifyUrl);
         // res.redirect(shopifyUrl);
         // res.send(`
@@ -174,7 +176,6 @@ app.get("/auth/failure", (req, res) => {
 });
 
 app.get("/get-shopify-url", (req, res) => {
-  console.log(shopifyUrl, email);
   // This endpoint should return the Shopify URL after the user is authenticated
   res.json({ shopifyUrl, email });
 });
