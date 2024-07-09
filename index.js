@@ -106,18 +106,11 @@ app.post("/auth/callback/token", async (req, res) => {
 
         const multipassToken = createMultipassToken(customerData);
 
-        // shopifyUrl = `https://${process.env.SHOPIFY_STORE}/account/login/multipass/${multipassToken}`;
-        // email = customerData.email;
-        // console.log(shopifyUrl);
+        shopifyUrl = `https://${process.env.SHOPIFY_STORE}/account/login/multipass/${multipassToken}`;
+        email = customerData.email;
+        console.log(shopifyUrl);
 
-        // res.json({ shopifyUrl, email: customerData.email });
-
-        // Redirect to Shopify login URL with Multipass token
-        res.redirect(
-          `/auth/success?multipassToken=${encodeURIComponent(
-            multipassToken
-          )}&email=${encodeURIComponent(customerData.email)}`
-        );
+        res.json({ shopifyUrl, email: customerData.email });
       }
     );
   } catch (error) {
@@ -140,53 +133,31 @@ function createMultipassToken(customerData) {
 }
 
 app.get("/auth/success", (req, res) => {
-  // res.send(`
-  //   <html>
-  //   <head>
-  //     <title>Redirecting...</title>
-  //   </head>
-  //   <body>
-  //     <script>
-  //       (function() {
-  //         fetch('/get-shopify-url').then(response => response.json()).then(data => {
-  //             if (data.shopifyUrl && data.email) {
-  //               // Redirect to Shopify URL
-  //               window.location.href = data.shopifyUrl;
-  //               // Call the check_login endpoint with the email
-  //               fetch('/shopify/check_login?email=' + encodeURIComponent(data.email)).then(response => response.json()).then(loginData => {
-  //                   console.log('Customer Data:', loginData);
-  //               }).catch(error => {
-  //                   console.error('Error checking login:', error);
-  //               });
-  //             } else {
-  //               document.body.innerHTML = 'Error: No Shopify URL found';
-  //             }
-  //         });
-  //       })();
-  //     </script>
-  //   </body>
-  //   </html>
-  // `);
-
-  const { multipassToken, email } = req.query;
-
-  if (!multipassToken || !email) {
-    return res.status(400).send("Missing Multipass token or email");
-  }
-
-  const shopifyUrl = `https://${process.env.SHOPIFY_STORE}/account/login/multipass/${multipassToken}`;
-
   res.send(`
     <html>
-      <head>
-        <title>Redirecting...</title>
-        <script>
-          window.location.href = "${shopifyUrl}";
-        </script>
-      </head>
-      <body>
-        <p>Redirecting to Shopify...</p>
-      </body>
+    <head>
+      <title>Redirecting...</title>
+    </head>
+    <body>
+      <script>
+        (function() {
+          fetch('/get-shopify-url').then(response => response.json()).then(data => {
+              if (data.shopifyUrl && data.email) {
+                // Redirect to Shopify URL
+                window.location.href = data.shopifyUrl;
+                // Call the check_login endpoint with the email
+                fetch('/shopify/check_login?email=' + encodeURIComponent(data.email)).then(response => response.json()).then(loginData => {
+                    console.log('Customer Data:', loginData);
+                }).catch(error => {
+                    console.error('Error checking login:', error);
+                });
+              } else {
+                document.body.innerHTML = 'Error: No Shopify URL found';
+              }
+          });
+        })();
+      </script>
+    </body>
     </html>
   `);
 });
