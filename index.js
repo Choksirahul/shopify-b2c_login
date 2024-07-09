@@ -104,22 +104,26 @@ app.post("/auth/callback/token", async (req, res) => {
           last_name: family_name,
         };
 
-        const multipassToken = createMultipassToken(customerData);
+        try {
+          const shopifyCustomer = await checkShopifyCustomer(
+            customerData.email
+          );
 
-        shopifyUrl = `https://${process.env.SHOPIFY_STORE}/account/login/multipass/${multipassToken}`;
-        email = customerData.email;
-        console.log(shopifyUrl);
-        // res.redirect(shopifyUrl);
-        // res.send(`
-        //   <html>
-        //     <head></head>
-        //     <body>
-        //       Redirecting to Shopify...
-        //       <a href="${shopifyUrl}">Shopify</a>
-        //     </body>
-        //   </html>
-        // `);
-        res.json({ shopifyUrl, email: customerData.email });
+          if (!shopifyCustomer) {
+            // Create new customer in Shopify if not found
+            const createdCustomer = await createShopifyCustomer(customerData);
+            console.log("Created Shopify customer:", createdCustomer);
+          }
+
+          const multipassToken = createMultipassToken(customerData);
+
+          shopifyUrl = `https://${process.env.SHOPIFY_STORE}/account/login/multipass/${multipassToken}`;
+          email = customerData.email;
+          res.json({ shopifyUrl, email: customerData.email });
+        } catch (error) {
+          console.error("Error checking Shopify customer:", error);
+          res.status(500).send("Error checking Shopify customer");
+        }
       }
     );
   } catch (error) {
@@ -139,6 +143,59 @@ function createMultipassToken(customerData) {
     Buffer.from(encrypted, "base64"),
   ]).toString("base64");
   return multipassToken;
+}
+
+async function checkShopifyCustomer(email) {
+  try {
+    const shopifyUrl = `https://${process.env.SHOPIFY_STORE}/admin/customers/search.json?query=email:${email}`;
+    const authHeader = `Basic ${Buffer.from(
+      `${process.env.SHOPIFY_API_KEY}:${process.env.SHOPIFY_API_PASSWORD}`
+    ).toString("base64")}`;
+
+    const response = await axios.get(shopifyUrl, {
+      headers: {
+        Authorization: authHeader,
+      },
+    });
+
+    if (response.data.customers && response.data.customers.length > 0) {
+      return response.data.customers[0];
+    }
+    return null;
+  } catch (error) {
+    console.error("Error fetching Shopify customer:", error);
+    throw error;
+  }
+}
+
+async function createShopifyCustomer(customerData) {
+  try {
+    const shopifyUrl = `https://${process.env.SHOPIFY_STORE}/admin/customers.json`;
+    const authHeader = `Basic ${Buffer.from(
+      `${process.env.SHOPIFY_API_KEY}:${process.env.SHOPIFY_API_PASSWORD}`
+    ).toString("base64")}`;
+
+    const response = await axios.post(
+      shopifyUrl,
+      {
+        customer: {
+          email: customerData.email,
+          first_name: customerData.first_name,
+          last_name: customerData.last_name,
+        },
+      },
+      {
+        headers: {
+          Authorization: authHeader,
+        },
+      }
+    );
+
+    return response.data.customer;
+  } catch (error) {
+    console.error("Error creating Shopify customer:", error);
+    throw error;
+  }
 }
 
 app.get("/auth/success", (req, res) => {
@@ -183,22 +240,16 @@ app.get("/get-shopify-url", (req, res) => {
 app.get("/shopify/check_login", async (req, res) => {
   try {
     const shopifyUrl = `https://${process.env.SHOPIFY_STORE}/admin/customers/search.json?query=email:${req.query.email}`;
-    console.log(`Shopify URL: ${shopifyUrl}`);
 
     const authHeader = `Basic ${Buffer.from(
       `${process.env.SHOPIFY_API_KEY}:${process.env.SHOPIFY_API_PASSWORD}`
     ).toString("base64")}`;
-
-    console.log(`Auth Header: ${authHeader}`);
 
     const response = await axios.get(shopifyUrl, {
       headers: {
         Authorization: authHeader,
       },
     });
-
-    console.log(`Shopify response status: ${response.status}`);
-    console.log(`Shopify response data: ${JSON.stringify(response.data)}`);
 
     if (response.data.customers && response.data.customers.length > 0) {
       res.json({ customer: response.data.customers[0] });
