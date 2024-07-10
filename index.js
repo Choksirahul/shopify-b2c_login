@@ -186,7 +186,7 @@ app.get("/get-shopify-url", (req, res) => {
 
 app.get("/shopify/check_login", async (req, res) => {
   try {
-    const shopifyUrl = `https://${process.env.SHOPIFY_STORE}/admin/api/2023-01/customers/search.json?query=email:${req.query.email}`;
+    // const shopifyUrl = `https://${process.env.SHOPIFY_STORE}/admin/api/2023-01/customers/search.json?query=email:${req.query.email}`;
 
     const authHeader = `Basic ${Buffer.from(
       `${process.env.SHOPIFY_API_KEY}:${process.env.SHOPIFY_API_PASSWORD}`
