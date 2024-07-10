@@ -73,7 +73,6 @@ app.get("/auth/callback", (req, res) => {
 
 app.post("/auth/callback/token", async (req, res) => {
   const { id_token } = req.body;
-  console.log(id_token);
 
   if (!id_token) {
     return res.status(400).send("ID token not provided");
@@ -97,6 +96,8 @@ app.post("/auth/callback/token", async (req, res) => {
           console.error("Token verification failed:", err);
           return res.status(401).send("Token verification failed");
         }
+
+        console.log(decoded);
 
         const { emails, given_name, family_name } = decoded;
         const customerData = {
