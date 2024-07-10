@@ -44,6 +44,7 @@ app.get("/auth/callback", (req, res) => {
           (function() {
             const fragment = window.location.hash.substring(1);
             const params = new URLSearchParams(fragment);
+            console.log(params);
             const idToken = params.get("id_token");
             if (idToken) {
               fetch('/auth/callback/token', {
