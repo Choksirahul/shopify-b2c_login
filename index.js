@@ -44,7 +44,6 @@ app.get("/auth/callback", (req, res) => {
           (function() {
             const fragment = window.location.hash.substring(1);
             const params = new URLSearchParams(fragment);
-            console.log(params);
             const idToken = params.get("id_token");
             if (idToken) {
               fetch('/auth/callback/token', {
@@ -74,6 +73,7 @@ app.get("/auth/callback", (req, res) => {
 
 app.post("/auth/callback/token", async (req, res) => {
   const { id_token } = req.body;
+  console.log(id_token);
 
   if (!id_token) {
     return res.status(400).send("ID token not provided");
