@@ -186,19 +186,24 @@ app.get("/get-shopify-url", (req, res) => {
 
 app.get("/shopify/check_login", async (req, res) => {
   try {
-    // const shopifyUrl = `https://${process.env.SHOPIFY_STORE}/admin/api/2023-01/customers/search.json?query=email:${req.query.email}`;
+    const shopifyUrl = `https://${process.env.SHOPIFY_STORE}/admin/api/2024-07/customers/search.json?query=email:${req.query.email}`;
 
     const authHeader = `Basic ${Buffer.from(
       `${process.env.SHOPIFY_API_KEY}:${process.env.SHOPIFY_API_PASSWORD}`
     ).toString("base64")}`;
 
-    const response = await axios.get(shopifyUrl);
-    console.log(response);
-    // if (response.data.customers && response.data.customers.length > 0) {
-    //   res.json({ customer: response.data.customers[0] });
-    // } else {
-    //   res.status(404).send("Customer not found");
-    // }
+    const response = await axios.get(shopifyUrl, {
+      headers: {
+        Authorization: authHeader,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+    if (response.data.customers && response.data.customers.length > 0) {
+      res.json({ customer: response.data.customers[0] });
+    } else {
+      res.status(404).send("Customer not found");
+    }
   } catch (error) {
     console.error("Error fetching customer data:", error);
     if (error.response) {
