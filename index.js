@@ -97,14 +97,25 @@ app.post("/auth/callback/token", async (req, res) => {
           return res.status(401).send("Token verification failed");
         }
 
-        console.log(decoded);
+        const timestamp = decoded.iat;
+        const date = new Date(timestamp * 1000);
+
+        // Adjust for the timezone offset (-04:00)
+        const offset = -4; // Offset in hours
+        const adjustedDate = new Date(date.getTime() + offset * 60 * 60 * 1000);
+
+        // Format to ISO 8601 with timezone offset
+        const formattedDate = adjustedDate.toISOString().replace("Z", "-04:00");
 
         const { emails, given_name, family_name } = decoded;
         const customerData = {
           email: emails[0],
           first_name: given_name,
           last_name: family_name,
+          formattedDate,
         };
+
+        console.log(customerData);
 
         const multipassToken = createMultipassToken(customerData);
 
