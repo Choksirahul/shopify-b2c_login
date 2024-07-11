@@ -168,8 +168,8 @@ function decodeMultipass(token, secret) {
   );
 
   // Decrypt
-  const iv = tokenBytes.slice(0, 16);
-  const ciphertext = tokenBytes.slice(16);
+  const iv = tokenBytes.subarray(0, 16);
+  const ciphertext = tokenBytes.subarray(16);
 
   const decipher = crypto.createDecipheriv(
     "aes-256-cbc",
