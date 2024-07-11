@@ -124,10 +124,13 @@ app.post("/auth/callback/token", async (req, res) => {
 
         console.log(multipassToken);
 
-        const multipassify = new Multipassify(
+        // const multipassify = new Multipassify(
+        //   process.env.SHOPIFY_MULTIPASS_SECRET
+        // );
+        const decodedData = decodeMultipass(
+          multipassToken,
           process.env.SHOPIFY_MULTIPASS_SECRET
         );
-        const decodedData = multipassify.decode(multipassToken);
 
         console.log(decodedData);
 
@@ -156,6 +159,33 @@ app.post("/auth/callback/token", async (req, res) => {
 //   ]).toString("base64");
 //   return multipassToken;
 // }
+
+function decodeMultipass(token, secret) {
+  // Decode Base64 URL
+  const tokenBytes = Buffer.from(
+    token.replace(/-/g, "+").replace(/_/g, "/"),
+    "base64"
+  );
+
+  // Decrypt
+  const iv = tokenBytes.slice(0, 16);
+  const ciphertext = tokenBytes.slice(16);
+
+  const decipher = crypto.createDecipheriv(
+    "aes-256-cbc",
+    crypto.createHash("sha256").update(secret).digest(),
+    iv
+  );
+  let decrypted = decipher.update(ciphertext, "base64", "utf8");
+  decrypted += decipher.final("utf8");
+
+  // Decompress
+  const decompressed = zlib
+    .inflateSync(Buffer.from(decrypted, "base64"))
+    .toString("utf8");
+
+  return JSON.parse(decompressed);
+}
 
 function deriveKeys(multipassSecret) {
   // Use the Multipass secret to derive two cryptographic keys,
