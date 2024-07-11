@@ -32,6 +32,27 @@ function getPublicKey(kid) {
   });
 }
 
+app.get("/logout", (req, res) => {
+  // Define the Azure AD B2C logout URL
+  const azureB2CLogoutUrl = `https://keeprdev.b2clogin.com/${process.env.B2C_TENANT}/oauth2/v2.0/logout?p=${process.env.B2C_POLICY}&post_logout_redirect_uri=${process.env.POST_LOGOUT_REDIRECT_URI}`;
+
+  // Define the Shopify logout URL
+  const shopifyLogoutUrl = `https://${process.env.SHOPIFY_STORE}/account/logout`;
+
+  // Fetch request to Shopify logout URL
+  axios
+    .get(shopifyLogoutUrl, { withCredentials: true })
+    .then(() => {
+      // After logging out of Shopify, redirect to Azure AD B2C logout URL
+      res.redirect(azureB2CLogoutUrl);
+    })
+    .catch((error) => {
+      console.error("Error logging out from Shopify:", error);
+      // Redirect to Azure AD B2C logout URL even if Shopify logout fails
+      res.redirect(azureB2CLogoutUrl);
+    });
+});
+
 app.get("/auth", (req, res) => {
   const redirectUri = `https://keeprdev.b2clogin.com/${process.env.B2C_TENANT}/oauth2/v2.0/authorize?p=${process.env.B2C_POLICY}&client_id=${process.env.B2C_CLIENT_ID}&nonce=defaultNonce&response_type=id_token&redirect_uri=${process.env.REDIRECT_URI}&scope=openid&prompt=login`;
   res.redirect(redirectUri);
