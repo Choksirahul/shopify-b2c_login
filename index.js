@@ -124,7 +124,9 @@ app.post("/auth/callback/token", async (req, res) => {
 
         console.log(multipassToken);
 
-        const multipassify = new Multipassify(multipassSecret);
+        const multipassify = new Multipassify(
+          process.env.SHOPIFY_MULTIPASS_SECRET
+        );
         const decodedData = multipassify.decode(multipassToken);
 
         console.log(decodedData);
