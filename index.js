@@ -97,27 +97,31 @@ app.post("/auth/callback/token", async (req, res) => {
           return res.status(401).send("Token verification failed");
         }
 
-        const timestamp = decoded.iat;
-        const date = new Date(timestamp * 1000);
+        // const timestamp = decoded.iat;
+        // const date = new Date(timestamp * 1000);
 
-        // Adjust for the timezone offset (-04:00)
-        const offset = -4; // Offset in hours
-        const adjustedDate = new Date(date.getTime() + offset * 60 * 60 * 1000);
+        // // Adjust for the timezone offset (-04:00)
+        // const offset = -4; // Offset in hours
+        // const adjustedDate = new Date(date.getTime() + offset * 60 * 60 * 1000);
 
-        // Format to ISO 8601 with timezone offset
-        const formattedDate = adjustedDate.toISOString().replace("Z", "-04:00");
+        // // Format to ISO 8601 with timezone offset
+        // const formattedDate = adjustedDate.toISOString().replace("Z", "-04:00");
 
         const { emails, given_name, family_name } = decoded;
         const customerData = {
           email: emails[0],
           first_name: given_name,
           last_name: family_name,
-          formattedDate,
         };
 
         console.log(customerData);
 
-        const multipassToken = createMultipassToken(customerData);
+        const multipassToken = generateToken(
+          customerData,
+          process.env.SHOPIFY_MULTIPASS_SECRET
+        );
+
+        console.log(multipassToken);
 
         shopifyUrl = `https://${process.env.SHOPIFY_STORE}/account/login/multipass/${multipassToken}`;
         email = customerData.email;
@@ -132,17 +136,66 @@ app.post("/auth/callback/token", async (req, res) => {
   }
 });
 
-function createMultipassToken(customerData) {
-  const key = Buffer.from(process.env.SHOPIFY_MULTIPASS_SECRET, "utf8");
-  const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
-  let encrypted = cipher.update(JSON.stringify(customerData), "utf8", "base64");
-  encrypted += cipher.final("base64");
-  const multipassToken = Buffer.concat([
-    iv,
-    Buffer.from(encrypted, "base64"),
+// function createMultipassToken(customerData) {
+//   const key = Buffer.from(process.env.SHOPIFY_MULTIPASS_SECRET, "utf8");
+//   const iv = crypto.randomBytes(16);
+//   const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
+//   let encrypted = cipher.update(JSON.stringify(customerData), "utf8", "base64");
+//   encrypted += cipher.final("base64");
+//   const multipassToken = Buffer.concat([
+//     iv,
+//     Buffer.from(encrypted, "base64"),
+//   ]).toString("base64");
+//   return multipassToken;
+// }
+
+function deriveKeys(multipassSecret) {
+  // Use the Multipass secret to derive two cryptographic keys,
+  // one for encryption, one for signing
+  const keyMaterial = crypto
+    .createHash("sha256")
+    .update(multipassSecret)
+    .digest();
+  const encryptionKey = keyMaterial.subarray(0, 16);
+  const signatureKey = keyMaterial.subarray(16, 32);
+  return { encryptionKey, signatureKey };
+}
+
+function generateToken(customerData, multipassSecret) {
+  const { encryptionKey, signatureKey } = deriveKeys(multipassSecret);
+
+  // Store the current time in ISO8601 format.
+  // The token will only be valid for a small timeframe around this timestamp.
+  customerData.created_at = new Date().toISOString();
+
+  // Serialize the customer data to JSON and encrypt it
+  const ciphertext = encrypt(JSON.stringify(customerData), encryptionKey);
+
+  // Create a signature (message authentication code) of the ciphertext
+  // and encode everything using URL-safe Base64 (RFC 4648)
+  const token = Buffer.concat([
+    ciphertext,
+    sign(ciphertext, signatureKey),
   ]).toString("base64");
-  return multipassToken;
+  return token.replace(/\+/g, "-").replace(/\//g, "_");
+}
+
+function encrypt(plaintext, encryptionKey) {
+  // Use a random IV
+  const iv = crypto.randomBytes(16);
+
+  // Use IV as first block of ciphertext
+  const cipher = crypto.createCipheriv("aes-128-cbc", encryptionKey, iv);
+  const encrypted = Buffer.concat([
+    iv,
+    cipher.update(plaintext, "utf8"),
+    cipher.final(),
+  ]);
+  return encrypted;
+}
+
+function sign(data, signatureKey) {
+  return crypto.createHmac("sha256", signatureKey).update(data).digest();
 }
 
 app.get("/auth/success", (req, res) => {
