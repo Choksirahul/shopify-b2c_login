@@ -3,6 +3,7 @@ const axios = require("axios");
 const jwt = require("jsonwebtoken");
 const jwksClient = require("jwks-rsa");
 const crypto = require("crypto");
+const Multipassify = require("multipassify");
 require("dotenv").config();
 
 const port = process.env.PORT || 3000;
@@ -123,6 +124,11 @@ app.post("/auth/callback/token", async (req, res) => {
 
         console.log(multipassToken);
 
+        const multipassify = new Multipassify(multipassSecret);
+        const decodedData = multipassify.decode(multipassToken);
+
+        console.log(decodedData);
+
         shopifyUrl = `https://${process.env.SHOPIFY_STORE}/account/login/multipass/${multipassToken}`;
         email = customerData.email;
         console.log(shopifyUrl);
@@ -212,11 +218,11 @@ app.get("/auth/success", (req, res) => {
                 // Redirect to Shopify URL
                 window.location.href = data.shopifyUrl;
                 // Call the check_login endpoint with the email
-                fetch('/shopify/check_login?email=' + encodeURIComponent(data.email)).then(response => response.json()).then(loginData => {
-                    console.log('Customer Data:', loginData);
-                }).catch(error => {
-                    console.error('Error checking login:', error);
-                });
+                // fetch('/shopify/check_login?email=' + encodeURIComponent(data.email)).then(response => response.json()).then(loginData => {
+                //     console.log('Customer Data:', loginData);
+                // }).catch(error => {
+                //     console.error('Error checking login:', error);
+                // });
               } else {
                 document.body.innerHTML = 'Error: No Shopify URL found';
               }
@@ -237,35 +243,35 @@ app.get("/get-shopify-url", (req, res) => {
   res.json({ shopifyUrl, email });
 });
 
-app.get("/shopify/check_login", async (req, res) => {
-  try {
-    const shopifyUrl = `https://${process.env.SHOPIFY_STORE}/admin/api/2024-07/customers/search.json?query=email:${req.query.email}`;
+// app.get("/shopify/check_login", async (req, res) => {
+//   try {
+//     const shopifyUrl = `https://${process.env.SHOPIFY_STORE}/admin/api/2024-07/customers/search.json?query=email:${req.query.email}`;
 
-    const authHeader = `Basic ${Buffer.from(
-      `${process.env.SHOPIFY_API_KEY}:${process.env.SHOPIFY_API_PASSWORD}`
-    ).toString("base64")}`;
+//     const authHeader = `Basic ${Buffer.from(
+//       `${process.env.SHOPIFY_API_KEY}:${process.env.SHOPIFY_API_PASSWORD}`
+//     ).toString("base64")}`;
 
-    const response = await axios.get(shopifyUrl, {
-      headers: {
-        Authorization: authHeader,
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
-    if (response.data.customers && response.data.customers.length > 0) {
-      res.json({ customer: response.data.customers[0] });
-    } else {
-      res.status(404).send("Customer not found");
-    }
-  } catch (error) {
-    console.error("Error fetching customer data:", error);
-    if (error.response) {
-      console.error("Response data:", error.response.data);
-      console.error("Response status:", error.response.status);
-    }
-    res.status(500).send("Error fetching customer data");
-  }
-});
+//     const response = await axios.get(shopifyUrl, {
+//       headers: {
+//         Authorization: authHeader,
+//         "Content-Type": "application/json",
+//         Accept: "application/json",
+//       },
+//     });
+//     if (response.data.customers && response.data.customers.length > 0) {
+//       res.json({ customer: response.data.customers[0] });
+//     } else {
+//       res.status(404).send("Customer not found");
+//     }
+//   } catch (error) {
+//     console.error("Error fetching customer data:", error);
+//     if (error.response) {
+//       console.error("Response data:", error.response.data);
+//       console.error("Response status:", error.response.status);
+//     }
+//     res.status(500).send("Error fetching customer data");
+//   }
+// });
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
