@@ -3,6 +3,7 @@ const axios = require("axios");
 const jwt = require("jsonwebtoken");
 const jwksClient = require("jwks-rsa");
 const crypto = require("crypto");
+const base64url = require("base64url");
 require("dotenv").config();
 
 const port = process.env.PORT || 3000;
@@ -173,11 +174,10 @@ function generateToken(customerData, multipassSecret) {
 
   // Create a signature (message authentication code) of the ciphertext
   // and encode everything using URL-safe Base64 (RFC 4648)
-  const token = Buffer.concat([
-    ciphertext,
-    sign(ciphertext, signatureKey),
-  ]).toString("base64");
-  return token.replace(/\+/g, "-").replace(/\//g, "_");
+  const token = base64url(
+    Buffer.concat([ciphertext, sign(ciphertext, signatureKey)])
+  );
+  return token;
 }
 
 function encrypt(plaintext, encryptionKey) {
