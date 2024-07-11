@@ -34,10 +34,17 @@ function getPublicKey(kid) {
 
 app.get("/logout", (req, res) => {
   // Define the Azure AD B2C logout URL
-  const azureB2CLogoutUrl = `https://keeprdev.b2clogin.com/${process.env.B2C_TENANT}/oauth2/v2.0/logout?p=${process.env.B2C_POLICY}&post_logout_redirect_uri=${process.env.POST_LOGOUT_REDIRECT_URI}`;
+  const azureB2CLogoutUrl = `https://keeprdev.b2clogin.com/${process.env.B2C_TENANT}/oauth2/v2.0/logout?p=${process.env.B2C_POLICY}&post_logout_redirect_uri=https://${process.env.SHOPIFY_STORE}`;
 
   // Define the Shopify logout URL
   const shopifyLogoutUrl = `https://${process.env.SHOPIFY_STORE}/account/logout`;
+
+  // Clear session data
+  req.session.destroy((err) => {
+    if (err) {
+      console.error("Error destroying session:", err);
+    }
+  });
 
   // Fetch request to Shopify logout URL
   axios
