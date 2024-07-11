@@ -125,7 +125,10 @@ app.post("/auth/callback/token", async (req, res) => {
         console.log(multipassToken);
 
         // Verify and decrypt the token
-        const decryptedData = verifyAndDecryptToken(token, multipassSecret);
+        const decryptedData = verifyAndDecryptToken(
+          multipassToken,
+          process.env.SHOPIFY_MULTIPASS_SECRET
+        );
         console.log(decryptedData);
 
         shopifyUrl = `https://${process.env.SHOPIFY_STORE}/account/login/multipass/${multipassToken}`;
