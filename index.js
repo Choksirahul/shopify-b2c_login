@@ -124,6 +124,10 @@ app.post("/auth/callback/token", async (req, res) => {
 
         console.log(multipassToken);
 
+        // Verify and decrypt the token
+        const decryptedData = verifyAndDecryptToken(token, multipassSecret);
+        console.log(decryptedData);
+
         shopifyUrl = `https://${process.env.SHOPIFY_STORE}/account/login/multipass/${multipassToken}`;
         email = customerData.email;
         console.log(shopifyUrl);
@@ -149,6 +153,36 @@ app.post("/auth/callback/token", async (req, res) => {
 //   ]).toString("base64");
 //   return multipassToken;
 // }
+
+function decrypt(encryptedData, encryptionKey) {
+  const iv = encryptedData.subarray(0, 16);
+  const encrypted = encryptedData.subarray(16);
+
+  const decipher = crypto.createDecipheriv("aes-128-cbc", encryptionKey, iv);
+  const decrypted = Buffer.concat([
+    decipher.update(encrypted),
+    decipher.final(),
+  ]);
+  return decrypted.toString("utf8");
+}
+
+function verifyAndDecryptToken(token, multipassSecret) {
+  const { encryptionKey, signatureKey } = deriveKeys(multipassSecret);
+
+  const decoded = base64url.toBuffer(token);
+  const ciphertext = decoded.subarray(0, decoded.length - 32);
+  const signature = decoded.subarray(decoded.length - 32);
+
+  // Verify the signature
+  const expectedSignature = sign(ciphertext, signatureKey);
+  if (!crypto.timingSafeEqual(signature, expectedSignature)) {
+    throw new Error("Invalid signature");
+  }
+
+  // Decrypt the ciphertext
+  const decryptedData = decrypt(ciphertext, encryptionKey);
+  return JSON.parse(decryptedData);
+}
 
 function deriveKeys(multipassSecret) {
   // Use the Multipass secret to derive two cryptographic keys,
