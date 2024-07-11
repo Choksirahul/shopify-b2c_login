@@ -32,7 +32,7 @@ function getPublicKey(kid) {
   });
 }
 
-app.get("/logout", (req, res) => {
+app.delete("/logout", (req, res) => {
   // Define the Azure AD B2C logout URL
   const azureB2CLogoutUrl = `https://keeprdev.b2clogin.com/${process.env.B2C_TENANT}/oauth2/v2.0/logout?p=${process.env.B2C_POLICY}&post_logout_redirect_uri=https://${process.env.SHOPIFY_STORE}`;
 
