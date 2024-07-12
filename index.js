@@ -67,23 +67,31 @@ app.get("/logout", (req, res) => {
       console.error("Failed to destroy session during logout:", err);
     } else {
       // Clear all cookies
-      setTimeout(() => {
-        for (let cookie in req.cookies) {
-          res.clearCookie(cookie, { path: "/" });
-        }
 
-        // Send a response to clear cookies on the client side and redirect to login
-        res.send(`
-        <script>
-          // Clear client-side cookies
-          document.cookie.split(';').forEach((c) => {
-            document.cookie = c.trim().split('=')[0] + '=; expires=' + new Date().toUTCString(); + 'path=/';
-          });
-          // Redirect to login
-          window.location.href = 'https://${process.env.SHOPIFY_STORE}';
-        </script>
+      for (let cookie in req.cookies) {
+        res.clearCookie(cookie, { path: "/" });
+      }
+
+      // Send a response to clear cookies on the client side and redirect to login
+      res.send(`
+        <html>
+          <head>
+            <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+            <meta http-equiv="Pragma" content="no-cache" />
+            <meta http-equiv="Expires" content="0" />
+          </head>
+          <body>
+            <script>
+              // Clear client-side cookies
+              document.cookie.split(';').forEach((c) => {
+                document.cookie = c.trim().split('=')[0] + '=; expires=' + new Date().toUTCString(); + 'path=/';
+              });
+              // Redirect to login
+              window.location.href = 'https://${process.env.SHOPIFY_STORE}';
+            </script>
+          </body>
+        </html>
       `);
-      }, 3000);
     }
   });
 });
