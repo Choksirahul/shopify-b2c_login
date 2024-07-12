@@ -44,38 +44,48 @@ function getPublicKey(kid) {
 }
 
 app.get("/logout", (req, res) => {
-  // Define the Azure AD B2C logout URL
-  const azureB2CLogoutUrl = `https://keeprdev.b2clogin.com/${process.env.B2C_TENANT}/oauth2/v2.0/logout?p=${process.env.B2C_POLICY}&post_logout_redirect_uri=https://${process.env.SHOPIFY_STORE}`;
-
-  // // Define the Shopify logout URL
-  // const shopifyLogoutUrl = `https://${process.env.SHOPIFY_STORE}/account/logout`;
-
-  // // Fetch request to Shopify logout URL
-  // axios
-  //   .get(shopifyLogoutUrl, { withCredentials: true })
-  //   .then(() => {
-  //     // After logging out of Shopify, redirect to Azure AD B2C logout URL
-  //     res.redirect(azureB2CLogoutUrl);
-  //   })
-  //   .catch((error) => {
-  //     console.error("Error logging out from Shopify:", error);
-  //     // Redirect to Azure AD B2C logout URL even if Shopify logout fails
-  //     res.redirect(azureB2CLogoutUrl);
-  //   });
   req.session.destroy((err) => {
     if (err) {
       console.error("Failed to destroy session during logout:", err);
+      res.status(500).send("Failed to logout");
     } else {
       // Clear all cookies
-
       for (let cookie in req.cookies) {
         res.clearCookie(cookie, { path: "/" });
       }
 
-      // Redirect to Azure B2C logout URL
-      res.redirect(azureB2CLogoutUrl);
+      // Redirect to client-side logout handler
+      res.redirect("/client-logout");
     }
   });
+});
+
+app.get("/client-logout", (req, res) => {
+  const shopifyStoreUrl = process.env.SHOPIFY_STORE || "default_store_url";
+  const azureB2CLogoutUrl = `https://<your-tenant>.b2clogin.com/<your-tenant>.onmicrosoft.com/oauth2/v2.0/logout?p=<your-policy-name>&post_logout_redirect_uri=${encodeURIComponent(
+    shopifyStoreUrl
+  )}`;
+
+  res.send(`
+    <html>
+      <head>
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+      </head>
+      <body>
+        <script>
+          // Clear client-side cookies
+          document.cookie.split(';').forEach((c) => {
+            document.cookie = c.trim().split('=')[0] + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+          });
+
+          // Redirect to Azure B2C logout
+          window.location.href = '${azureB2CLogoutUrl}';
+        </script>
+      </body>
+    </html>
+  `);
 });
 
 app.get("/auth", (req, res) => {
