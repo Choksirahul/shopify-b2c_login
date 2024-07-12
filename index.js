@@ -55,11 +55,6 @@ app.get("/logout", (req, res) => {
         res.clearCookie(cookie, { path: "/" });
       }
 
-      // Set cache-control headers to ensure no caching
-      res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
-      res.set("Pragma", "no-cache");
-      res.set("Expires", "0");
-
       // Redirect to client-side logout handler
       res.redirect("/client-logout");
     }
@@ -85,9 +80,11 @@ app.get("/client-logout", (req, res) => {
       <body>
         <script>
           // Clear client-side cookies
-          document.cookie.split(';').forEach((c) => {
-            document.cookie = c.trim().split('=')[0] + '=; expires=new Date().toISOString(); path=/';
-          });
+         document.cookie.split(';').forEach(cookie => {
+          const eqPos = cookie.indexOf('=');
+          const name = eqPos > -1 ? cookie.substring(0, eqPos) : cookie;
+          document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        });
 
           // Redirect to Azure B2C logout
           window.location.href = '${azureB2CLogoutUrl}';
