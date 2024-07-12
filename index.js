@@ -68,7 +68,7 @@ app.get("/logout", (req, res) => {
     } else {
       // Clear all cookies
       for (let cookie in req.cookies) {
-        res.clearCookie(cookie);
+        res.clearCookie(cookie, { path: "/" });
       }
 
       // Send a response to clear cookies on the client side and redirect to login
