@@ -72,25 +72,33 @@ app.get("/logout", (req, res) => {
         res.clearCookie(cookie, { path: "/" });
       }
 
+      const shopifyStoreUrl = process.env.SHOPIFY_STORE || "default_store_url";
+
+      // Set cache-control headers to ensure no caching
+      res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+      res.set("Pragma", "no-cache");
+      res.set("Expires", "0");
+
       // Send a response to clear cookies on the client side and redirect to login
       res.send(`
         <html>
-          <head>
-            <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-            <meta http-equiv="Pragma" content="no-cache" />
-            <meta http-equiv="Expires" content="0" />
-          </head>
-          <body>
-            <script>
-              // Clear client-side cookies
-              document.cookie.split(';').forEach((c) => {
-                document.cookie = c.trim().split('=')[0] + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
-              });
-              // Redirect to login
-              window.location.href = 'https://${process.env.SHOPIFY_STORE}';
-            </script>
-          </body>
-        </html>
+        <head>
+          <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+          <meta http-equiv="Pragma" content="no-cache" />
+          <meta http-equiv="Expires" content="0" />
+        </head>
+        <body>
+          <script>
+            // Clear client-side cookies
+            document.cookie.split(';').forEach((c) => {
+              document.cookie = c.trim().split('=')[0] + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+            });
+
+            // Redirect to login
+            window.location.href = 'https://${shopifyStoreUrl}';
+          </script>
+        </body>
+      </html>
       `);
     }
   });
