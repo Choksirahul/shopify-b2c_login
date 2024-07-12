@@ -81,7 +81,7 @@ app.get("/client-logout", (req, res) => {
           });
 
           // Redirect to Azure B2C logout
-          window.location.href = ${shopifyLogoutUrl};
+          window.location.href = '${shopifyLogoutUrl}';
         </script>
       </body>
     </html>
