@@ -44,8 +44,8 @@ function getPublicKey(kid) {
 }
 
 app.get("/logout", (req, res) => {
-  // // Define the Azure AD B2C logout URL
-  // const azureB2CLogoutUrl = `https://keeprdev.b2clogin.com/${process.env.B2C_TENANT}/oauth2/v2.0/logout?p=${process.env.B2C_POLICY}&post_logout_redirect_uri=https://${process.env.SHOPIFY_STORE}`;
+  // Define the Azure AD B2C logout URL
+  const azureB2CLogoutUrl = `https://keeprdev.b2clogin.com/${process.env.B2C_TENANT}/oauth2/v2.0/logout?p=${process.env.B2C_POLICY}&post_logout_redirect_uri=https://${process.env.SHOPIFY_STORE}`;
 
   // // Define the Shopify logout URL
   // const shopifyLogoutUrl = `https://${process.env.SHOPIFY_STORE}/account/logout`;
@@ -72,34 +72,8 @@ app.get("/logout", (req, res) => {
         res.clearCookie(cookie, { path: "/" });
       }
 
-      const shopifyStoreUrl = process.env.SHOPIFY_STORE || "default_store_url";
-
-      // Set cache-control headers to ensure no caching
-      res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
-      res.set("Pragma", "no-cache");
-      res.set("Expires", "0");
-
-      // Send a response to clear cookies on the client side and redirect to login
-      res.send(`
-        <html>
-        <head>
-          <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-          <meta http-equiv="Pragma" content="no-cache" />
-          <meta http-equiv="Expires" content="0" />
-        </head>
-        <body>
-          <script>
-            // Clear client-side cookies
-            document.cookie.split(';').forEach((c) => {
-              document.cookie = c.trim().split('=')[0] + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
-            });
-
-            // Redirect to login
-            window.location.href = 'https://${shopifyStoreUrl}';
-          </script>
-        </body>
-      </html>
-      `);
+      // Redirect to Azure B2C logout URL
+      res.redirect(azureB2CLogoutUrl);
     }
   });
 });
