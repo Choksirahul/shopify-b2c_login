@@ -33,24 +33,46 @@ function getPublicKey(kid) {
 }
 
 app.get("/logout", (req, res) => {
-  // Define the Azure AD B2C logout URL
-  const azureB2CLogoutUrl = `https://keeprdev.b2clogin.com/${process.env.B2C_TENANT}/oauth2/v2.0/logout?p=${process.env.B2C_POLICY}&post_logout_redirect_uri=https://${process.env.SHOPIFY_STORE}`;
+  // // Define the Azure AD B2C logout URL
+  // const azureB2CLogoutUrl = `https://keeprdev.b2clogin.com/${process.env.B2C_TENANT}/oauth2/v2.0/logout?p=${process.env.B2C_POLICY}&post_logout_redirect_uri=https://${process.env.SHOPIFY_STORE}`;
 
-  // Define the Shopify logout URL
-  const shopifyLogoutUrl = `https://${process.env.SHOPIFY_STORE}/account/logout`;
+  // // Define the Shopify logout URL
+  // const shopifyLogoutUrl = `https://${process.env.SHOPIFY_STORE}/account/logout`;
 
-  // Fetch request to Shopify logout URL
-  axios
-    .get(shopifyLogoutUrl, { withCredentials: true })
-    .then(() => {
-      // After logging out of Shopify, redirect to Azure AD B2C logout URL
-      res.redirect(azureB2CLogoutUrl);
-    })
-    .catch((error) => {
-      console.error("Error logging out from Shopify:", error);
-      // Redirect to Azure AD B2C logout URL even if Shopify logout fails
-      res.redirect(azureB2CLogoutUrl);
-    });
+  // // Fetch request to Shopify logout URL
+  // axios
+  //   .get(shopifyLogoutUrl, { withCredentials: true })
+  //   .then(() => {
+  //     // After logging out of Shopify, redirect to Azure AD B2C logout URL
+  //     res.redirect(azureB2CLogoutUrl);
+  //   })
+  //   .catch((error) => {
+  //     console.error("Error logging out from Shopify:", error);
+  //     // Redirect to Azure AD B2C logout URL even if Shopify logout fails
+  //     res.redirect(azureB2CLogoutUrl);
+  //   });
+  req.session.destroy((err) => {
+    if (err) {
+      console.error("Failed to destroy session during logout:", err);
+    } else {
+      // Clear all cookies
+      for (let cookie in req.cookies) {
+        res.clearCookie(cookie);
+      }
+
+      // Send a response to clear cookies on the client side and redirect to login
+      res.send(`
+        <script>
+          // Clear client-side cookies
+          document.cookie.split(';').forEach((c) => {
+            document.cookie = c.trim().split('=')[0] + '=; expires=' + new Date().toUTCString() + ';path=/';
+          });
+          // Redirect to login
+          window.location.href = 'https://${process.env.SHOPIFY_STORE}';
+        </script>
+      `);
+    }
+  });
 });
 
 app.get("/auth", (req, res) => {
