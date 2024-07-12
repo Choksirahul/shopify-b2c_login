@@ -62,13 +62,7 @@ app.get("/logout", (req, res) => {
 });
 
 app.get("/client-logout", (req, res) => {
-  const azureB2CLogoutUrl = `https://keeprdev.b2clogin.com/${
-    process.env.B2C_TENANT
-  }/oauth2/v2.0/logout?p=${
-    process.env.B2C_POLICY
-  }&post_logout_redirect_uri=https://${encodeURIComponent(
-    process.env.SHOPIFY_STORE
-  )}`;
+  const shopifyLogoutUrl = `https://${process.env.SHOPIFY_STORE}/account/logout`;
 
   res.send(`
     <html>
@@ -80,14 +74,14 @@ app.get("/client-logout", (req, res) => {
       <body>
         <script>
           // Clear client-side cookies
-         document.cookie.split(';').forEach(cookie => {
-          const eqPos = cookie.indexOf('=');
-          const name = eqPos > -1 ? cookie.substring(0, eqPos) : cookie;
-          document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT';
-        });
+          document.cookie.split(';').forEach(cookie => {
+            const eqPos = cookie.indexOf('=');
+            const name = eqPos > -1 ? cookie.substring(0, eqPos) : cookie;
+            document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT';
+          });
 
           // Redirect to Azure B2C logout
-          window.location.href = '${azureB2CLogoutUrl}';
+          window.location.href = ${shopifyLogoutUrl};
         </script>
       </body>
     </html>
