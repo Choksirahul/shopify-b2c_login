@@ -76,7 +76,7 @@ app.get("/logout", (req, res) => {
         <script>
           // Clear client-side cookies
           document.cookie.split(';').forEach((c) => {
-            document.cookie = c.trim().split('=')[0] + '=; expires=' + new Date().toUTCString() + ';path=/';
+            document.cookie = c.trim().split('=')[0] + '=; expires=' + new Date().toUTCString(); + 'path=/';
           });
           // Redirect to login
           window.location.href = 'https://${process.env.SHOPIFY_STORE}';
