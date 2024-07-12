@@ -79,7 +79,7 @@ app.get("/logout", (req, res) => {
             document.cookie = c.trim().split('=')[0] + '=; expires=' + new Date().toUTCString() + ';path=/';
           });
           // Redirect to login
-          // window.location.href = 'https://${process.env.SHOPIFY_STORE}';
+          window.location.href = 'https://${process.env.SHOPIFY_STORE}';
         </script>
       `);
     }
