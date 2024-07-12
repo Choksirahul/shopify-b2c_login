@@ -11,6 +11,7 @@ require("dotenv").config();
 const port = process.env.PORT || 3000;
 const app = express();
 const cors = require("cors");
+const secretKey = crypto.randomBytes(64).toString("hex");
 
 app.use(cors());
 
@@ -19,7 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(
   session({
-    secret: `${process.env.SHOPIFY_API_PASSWORD}`,
+    secret: secretKey,
     resave: false,
     saveUninitialized: true,
   })
@@ -54,6 +55,11 @@ app.get("/logout", (req, res) => {
         res.clearCookie(cookie, { path: "/" });
       }
 
+      // Set cache-control headers to ensure no caching
+      res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+      res.set("Pragma", "no-cache");
+      res.set("Expires", "0");
+
       // Redirect to client-side logout handler
       res.redirect("/client-logout");
     }
@@ -80,7 +86,7 @@ app.get("/client-logout", (req, res) => {
         <script>
           // Clear client-side cookies
           document.cookie.split(';').forEach((c) => {
-            document.cookie = c.trim().split('=')[0] + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+            document.cookie = c.trim().split('=')[0] + '=; expires=new Date().toISOString(); path=/';
           });
 
           // Redirect to Azure B2C logout
