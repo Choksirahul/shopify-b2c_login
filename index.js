@@ -62,9 +62,11 @@ app.get("/logout", (req, res) => {
 
 app.get("/client-logout", (req, res) => {
   const shopifyStoreUrl = process.env.SHOPIFY_STORE || "default_store_url";
-  const azureB2CLogoutUrl = `https://<your-tenant>.b2clogin.com/<your-tenant>.onmicrosoft.com/oauth2/v2.0/logout?p=<your-policy-name>&post_logout_redirect_uri=${encodeURIComponent(
-    shopifyStoreUrl
-  )}`;
+  const azureB2CLogoutUrl = `https://keeprdev.b2clogin.com/${
+    process.env.B2C_TENANT
+  }/oauth2/v2.0/logout?p=${
+    process.env.B2C_POLICY
+  }&post_logout_redirect_uri=${encodeURIComponent(shopifyStoreUrl)}`;
 
   res.send(`
     <html>
