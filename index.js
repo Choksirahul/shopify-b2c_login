@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 const jwksClient = require("jwks-rsa");
 const crypto = require("crypto");
 const base64url = require("base64url");
+const session = require("express-session");
+const cookieParser = require("cookie-parser");
 require("dotenv").config();
 
 const port = process.env.PORT || 3000;
@@ -14,6 +16,15 @@ app.use(cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(
+  session({
+    secret: `${process.env.SHOPIFY_API_PASSWORD}`,
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+
 let shopifyUrl;
 let email;
 
