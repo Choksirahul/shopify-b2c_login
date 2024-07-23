@@ -154,16 +154,6 @@ app.post("/auth/callback/token", async (req, res) => {
           return res.status(401).send("Token verification failed");
         }
 
-        // const timestamp = decoded.iat;
-        // const date = new Date(timestamp * 1000);
-
-        // // Adjust for the timezone offset (-04:00)
-        // const offset = -4; // Offset in hours
-        // const adjustedDate = new Date(date.getTime() + offset * 60 * 60 * 1000);
-
-        // // Format to ISO 8601 with timezone offset
-        // const formattedDate = adjustedDate.toISOString().replace("Z", "-04:00");
-
         const { emails, given_name, family_name } = decoded;
         const customerData = {
           email: emails[0],
@@ -199,19 +189,6 @@ app.post("/auth/callback/token", async (req, res) => {
     res.status(500).send("Authentication failed");
   }
 });
-
-// function createMultipassToken(customerData) {
-//   const key = Buffer.from(process.env.SHOPIFY_MULTIPASS_SECRET, "utf8");
-//   const iv = crypto.randomBytes(16);
-//   const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
-//   let encrypted = cipher.update(JSON.stringify(customerData), "utf8", "base64");
-//   encrypted += cipher.final("base64");
-//   const multipassToken = Buffer.concat([
-//     iv,
-//     Buffer.from(encrypted, "base64"),
-//   ]).toString("base64");
-//   return multipassToken;
-// }
 
 function decrypt(encryptedData, encryptionKey) {
   const iv = encryptedData.subarray(0, 16);
@@ -304,12 +281,6 @@ app.get("/auth/success", (req, res) => {
               if (data.shopifyUrl && data.email) {
                 // Redirect to Shopify URL
                 window.location.href = data.shopifyUrl;
-                // Call the check_login endpoint with the email
-                // fetch('/shopify/check_login?email=' + encodeURIComponent(data.email)).then(response => response.json()).then(loginData => {
-                //     console.log('Customer Data:', loginData);
-                // }).catch(error => {
-                //     console.error('Error checking login:', error);
-                // });
               } else {
                 document.body.innerHTML = 'Error: No Shopify URL found';
               }
@@ -329,36 +300,6 @@ app.get("/get-shopify-url", (req, res) => {
   // This endpoint should return the Shopify URL after the user is authenticated
   res.json({ shopifyUrl, email });
 });
-
-// app.get("/shopify/check_login", async (req, res) => {
-//   try {
-//     const shopifyUrl = `https://${process.env.SHOPIFY_STORE}/admin/api/2024-07/customers/search.json?query=email:${req.query.email}`;
-
-//     const authHeader = `Basic ${Buffer.from(
-//       `${process.env.SHOPIFY_API_KEY}:${process.env.SHOPIFY_API_PASSWORD}`
-//     ).toString("base64")}`;
-
-//     const response = await axios.get(shopifyUrl, {
-//       headers: {
-//         Authorization: authHeader,
-//         "Content-Type": "application/json",
-//         Accept: "application/json",
-//       },
-//     });
-//     if (response.data.customers && response.data.customers.length > 0) {
-//       res.json({ customer: response.data.customers[0] });
-//     } else {
-//       res.status(404).send("Customer not found");
-//     }
-//   } catch (error) {
-//     console.error("Error fetching customer data:", error);
-//     if (error.response) {
-//       console.error("Response data:", error.response.data);
-//       console.error("Response status:", error.response.status);
-//     }
-//     res.status(500).send("Error fetching customer data");
-//   }
-// });
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
