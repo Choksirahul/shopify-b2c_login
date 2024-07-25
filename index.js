@@ -44,49 +44,49 @@ function getPublicKey(kid) {
   });
 }
 
-app.get("/logout", (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      console.error("Failed to destroy session during logout:", err);
-      res.status(500).send("Failed to logout");
-    } else {
-      // Clear all cookies
-      for (let cookie in req.cookies) {
-        res.clearCookie(cookie, { path: "/" });
-      }
+// app.get("/logout", (req, res) => {
+//   req.session.destroy((err) => {
+//     if (err) {
+//       console.error("Failed to destroy session during logout:", err);
+//       res.status(500).send("Failed to logout");
+//     } else {
+//       // Clear all cookies
+//       for (let cookie in req.cookies) {
+//         res.clearCookie(cookie, { path: "/" });
+//       }
 
-      // Redirect to client-side logout handler
-      res.redirect("/client-logout");
-    }
-  });
-});
+//       // Redirect to client-side logout handler
+//       res.redirect("/client-logout");
+//     }
+//   });
+// });
 
-app.get("/client-logout", (req, res) => {
-  const shopifyLogoutUrl = `https://${process.env.SHOPIFY_STORE}/account/logout`;
+// app.get("/client-logout", (req, res) => {
+//   const shopifyLogoutUrl = `https://${process.env.SHOPIFY_STORE}/account/logout`;
 
-  res.send(`
-    <html>
-      <head>
-        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-        <meta http-equiv="Pragma" content="no-cache" />
-        <meta http-equiv="Expires" content="0" />
-      </head>
-      <body>
-        <script>
-          // Clear client-side cookies
-          document.cookie.split(';').forEach(cookie => {
-            const eqPos = cookie.indexOf('=');
-            const name = eqPos > -1 ? cookie.substring(0, eqPos) : cookie;
-            document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT';
-          });
+//   res.send(`
+//     <html>
+//       <head>
+//         <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+//         <meta http-equiv="Pragma" content="no-cache" />
+//         <meta http-equiv="Expires" content="0" />
+//       </head>
+//       <body>
+//         <script>
+//           // Clear client-side cookies
+//           document.cookie.split(';').forEach(cookie => {
+//             const eqPos = cookie.indexOf('=');
+//             const name = eqPos > -1 ? cookie.substring(0, eqPos) : cookie;
+//             document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT';
+//           });
 
-          // Redirect to Azure B2C logout
-          window.location.href = '${shopifyLogoutUrl}';
-        </script>
-      </body>
-    </html>
-  `);
-});
+//           // Redirect to Azure B2C logout
+//           window.location.href = '${shopifyLogoutUrl}';
+//         </script>
+//       </body>
+//     </html>
+//   `);
+// });
 
 app.get("/auth", (req, res) => {
   const redirectUri = `https://keeprdev.b2clogin.com/${process.env.B2C_TENANT}/oauth2/v2.0/authorize?p=${process.env.B2C_POLICY}&client_id=${process.env.B2C_CLIENT_ID}&nonce=defaultNonce&response_type=id_token&redirect_uri=${process.env.REDIRECT_URI}&scope=openid&prompt=login`;
@@ -168,18 +168,14 @@ app.post("/auth/callback/token", async (req, res) => {
           process.env.SHOPIFY_MULTIPASS_SECRET
         );
 
-        console.log(multipassToken);
-
         // Verify and decrypt the token
         const decryptedData = verifyAndDecryptToken(
           multipassToken,
           process.env.SHOPIFY_MULTIPASS_SECRET
         );
-        console.log(decryptedData);
 
         shopifyUrl = `https://${process.env.SHOPIFY_STORE}/account/login/multipass/${multipassToken}`;
         email = customerData.email;
-        console.log(shopifyUrl);
 
         res.json({ shopifyUrl, email: customerData.email });
       }
