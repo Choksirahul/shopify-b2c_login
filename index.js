@@ -37,40 +37,40 @@ app.get("/auth", (req, res) => {
   res.redirect(redirectUri);
 });
 
-app.get("/auth/callback", (req, res) => {
-  res.send(`
-    <html>
-      <head>
-        <script>
-          (function() {
-            const fragment = window.location.hash.substring(1);
-            const params = new URLSearchParams(fragment);
-            const idToken = params.get("id_token");
-            if (idToken) {
-              fetch('/auth/callback/token', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ id_token: idToken })
-              }).then(response => {
-                if (response.ok) {
-                  window.location.href = '/auth/success';
-                } else {
-                  window.location.href = '/auth/failure';
-                }
-              });
-            } else {
-              window.location.href = '/auth/failure';
-            }
-          })();
-        </script>
-      </head>
-      <body>
-      </body>
-    </html>
-  `);
-});
+// app.get("/auth/callback", (req, res) => {
+//   res.send(`
+//     <html>
+//       <head>
+//         <script>
+//           (function() {
+//             const fragment = window.location.hash.substring(1);
+//             const params = new URLSearchParams(fragment);
+//             const idToken = params.get("id_token");
+//             if (idToken) {
+//               fetch('/auth/callback/token', {
+//                 method: 'POST',
+//                 headers: {
+//                   'Content-Type': 'application/json'
+//                 },
+//                 body: JSON.stringify({ id_token: idToken })
+//               }).then(response => {
+//                 if (response.ok) {
+//                   window.location.href = '/auth/success';
+//                 } else {
+//                   window.location.href = '/auth/failure';
+//                 }
+//               });
+//             } else {
+//               window.location.href = '/auth/failure';
+//             }
+//           })();
+//         </script>
+//       </head>
+//       <body>
+//       </body>
+//     </html>
+//   `);
+// });
 
 app.post("/auth/callback/token", async (req, res) => {
   const { id_token } = req.body;
@@ -172,29 +172,29 @@ function sign(data, signatureKey) {
   return crypto.createHmac("sha256", signatureKey).update(data).digest();
 }
 
-app.get("/auth/success", (req, res) => {
-  res.send(`
-    <html>
-    <head>
-      <title>Redirecting...</title>
-    </head>
-    <body>
-      <script>
-        (function() {
-          fetch('/get-shopify-url').then(response => response.json()).then(data => {
-              if (data.shopifyUrl && data.email) {
-                // Redirect to Shopify URL
-                window.location.href = data.shopifyUrl;
-              } else {
-                document.body.innerHTML = 'Error: No Shopify URL found';
-              }
-          });
-        })();
-      </script>
-    </body>
-    </html>
-  `);
-});
+// app.get("/auth/success", (req, res) => {
+//   res.send(`
+//     <html>
+//     <head>
+//       <title>Redirecting...</title>
+//     </head>
+//     <body>
+//       <script>
+//         (function() {
+//           fetch('/get-shopify-url').then(response => response.json()).then(data => {
+//               if (data.shopifyUrl && data.email) {
+//                 // Redirect to Shopify URL
+//                 window.location.href = data.shopifyUrl;
+//               } else {
+//                 document.body.innerHTML = 'Error: No Shopify URL found';
+//               }
+//           });
+//         })();
+//       </script>
+//     </body>
+//     </html>
+//   `);
+// });
 
 app.get("/auth/failure", (req, res) => {
   res.send("Authentication failed! Please try again.");
