@@ -73,6 +73,7 @@ app.get("/auth", (req, res) => {
 // });
 
 app.get("/auth/callback", (req, res) => {
+  console.log(req);
   const idToken = req.query.id_token;
 
   if (!idToken) {
