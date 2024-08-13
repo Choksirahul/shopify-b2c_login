@@ -72,6 +72,16 @@ app.get("/auth", (req, res) => {
 //   `);
 // });
 
+app.get("/auth/callback", (req, res) => {
+  const idToken = req.query.id_token;
+
+  if (!idToken) {
+    return res.status(400).send("ID token missing");
+  }
+
+  return res.redirect("/auth/callback/token");
+});
+
 app.post("/auth/callback/token", async (req, res) => {
   const { id_token } = req.body;
 
